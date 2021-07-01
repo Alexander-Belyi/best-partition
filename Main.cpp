@@ -68,7 +68,7 @@ vector<SolutionInfo> run_CPP_test(Graph& G, BnBParameters bnb_params,
 
 int run_CPP_rand_test_nets(int test_set, bool compare_with_ILP = false, int num_combo_runs = 2, int text_level = 0)
 {
-	string path = tests_folder+"/cpp/cpp_random_graphs/test_set_" + to_string(test_set) + "/";
+	string path = tests_folder+"/Jaehn/cpp_random_graphs/test_set_" + to_string(test_set) + "/";
 	set<string> file_ends;
 	if (test_set == 3)
 		file_ends = {"_40.edgelist", "_80.edgelist"};
@@ -109,11 +109,11 @@ int run_CPP_rand_test_nets(int test_set, bool compare_with_ILP = false, int num_
 
 int run_CPP_rw_test_nets(int test_set, bool compare_with_ILP = false, int num_combo_runs = 2, int text_level = 0)
 {
-	string path = tests_folder+"/cpp/cpp_real_world_graphs/Grotschel-Wakabayashi/";
+	string path = tests_folder+"/Jaehn/cpp_real_world_graphs/Grotschel-Wakabayashi/";
 	vector<string> file_names = {"wild_cats", "cars", "workers", "cetacea", "micro", "UNO", "UNO_1a", "UNO_1b", "UNO_2a", "UNO_2b"};
 	BnBParameters bnb_params;
 	if (test_set == 2) {
-		path = tests_folder+"/cpp/cpp_real_world_graphs/Oosten/";
+		path = tests_folder+"/Jaehn/cpp_real_world_graphs/Oosten/";
 		file_names = {"KKV", "SUL", "SEI", "MCC", "BOC"};
 		bnb_params.edge_sorting_order = BnBParameters::PENALTY_DIFFERENCE;
 		bnb_params.default_mode = BnBParameters::SIMPLEX;
@@ -143,12 +143,38 @@ int run_CPP_rw_test_nets(int test_set, bool compare_with_ILP = false, int num_co
 	return 0;
 }
 
+int run_Miyauchi_nets()
+{
+	string path = tests_folder+"/Miyauchi/Modularity/";
+	vector<string> network_file_names = {
+		"Zachary Karate.net", // 0.1s, 0 nodes
+		"Dolphins Social Network.net", // 5.6s, 337 nodes
+		"Les Miserables_unit.net", // 7.3s, 74 nodes
+		"Political Books.net", // 105, IP: 0.52723659380607923, IP Time: 101.6184; bnb: Time = 30.2, trivial estimate = 0.845149, chains estimate = 0.527913, best estimate = 0.527237, Combo's score = 0.527237, optimum = 0.527237, visited 137 nodes
+		"American College Football.net", // 115, IP: 0.60456956268345896, IP Time: 33.25; bnb: Time = 41.41, trivial estimate = 0.905928, chains estimate = 0.605627, best estimate = 0.604570, Combo's score = 0.604570, optimum = 0.604570, visited 132 nodes
+		"USAir97.net", //332 nodes
+		"s838.net", //512 nodes
+		"netscience.net", //1589 nodes
+		"power-grid.net" //4941 nodes
+	};
+	for(const string& net_name : network_file_names)
+	{
+		Graph G = ReadGraphFromFile(path + net_name);
+		cout << endl << net_name << " size = " << G.Size() << endl;
+		clock_t time_start = clock();
+		cout << " estimated UB = " << EstimateUB_chains_fast(G)
+		 	 << ". Time: " << double(clock() - time_start) / CLOCKS_PER_SEC << endl;
+	}
+	return 0;
+}
+
 int main(int argc, char** argv)
 {
 	cout.precision(17);
 	bool compare_with_ILP = false;
 	int num_combo_runs = 2;
 	int text_level = 0;
+	//run_Miyauchi_nets();
 	cout << "Starting random test set 1" << endl;
 	run_CPP_rand_test_nets(1, compare_with_ILP, num_combo_runs, text_level);
 	cout << "Starting random test set 2" << endl;
