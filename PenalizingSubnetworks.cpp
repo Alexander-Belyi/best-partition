@@ -27,9 +27,11 @@
 #include <ilcplex/ilocplex.h>
 #endif
 
+#include <algorithm>
 #include <deque>
 #include <iostream>
 #include <map>
+#include <random>
 #include <stack>
 #include <tuple>
 #include <vector>
@@ -66,7 +68,7 @@ vector<int> PositiveConnectedComponents(const Matrix& m, const MatrixInt& fixedE
 
 vector<int> PositiveConnectedComponents(const Matrix& m)
 {
-    PositiveConnectedComponents(m, MatrixInt());
+    return PositiveConnectedComponents(m, MatrixInt());
 }
 
 bool OnlyPositiveEdgesInPositiveConnComp(const Matrix& Q, const MatrixInt& fixedEdges)
@@ -609,7 +611,8 @@ double AddPenalizingChains_fast(size_t len,
     double total_penalty = 0;
     vector<Edge> edges = NegativeOrExcludedEdges(Q, fixedEdges);
     //sort(edges.begin(), edges.end());
-    random_shuffle(edges.begin(), edges.end());
+    mt19937 rng(7);
+    shuffle(edges.begin(), edges.end(), rng);
     for (size_t i = 0; i < edges.size(); /* empty */) {
         Edge& edge = edges[i];
         vector<size_t> path = GetPositivePath(edge.node1, edge.node2, len, Q, fixedEdges);
