@@ -41,14 +41,17 @@ target_include_directories(BestPartition PRIVATE "${CMAKE_SOURCE_DIR}/Combo/")
 find_package(CBC)
 if (NOT CBC_FOUND)
     #add CBC libs manually
+    #this code is here to add debug version of CBC
+    #most likely you don't want it to be executed
+    #if you have errors finding CBC make sure to install it correctly and/or provide CBC_ROOT
     if (NOT CBC_ROOT)
         set(CBC_ROOT ${CMAKE_SOURCE_DIR}/../Cbc-2.9/)
     endif ()
     set(CBC_LIBS_DIR_DBG ${CBC_ROOT}/build/debug/lib)
     set(CBC_LIBS_DIR_REL ${CBC_ROOT}/build/release/lib)
 
-    set(CBC_LIBRARIES Cbc OsiClp Clp CoinUtils)
-    foreach(lib IN LISTS CBC_LIBRARIES)
+    set(CBC_TARGETS Cbc OsiClp Clp CoinUtils)
+    foreach(lib IN LISTS CBC_TARGETS)
         add_library(${lib} UNKNOWN IMPORTED)
         set_target_properties(${lib}
             PROPERTIES
@@ -56,7 +59,7 @@ if (NOT CBC_FOUND)
                 IMPORTED_LOCATION_RELEASE ${CBC_LIBS_DIR_REL}/lib${lib}.so
             )
     endforeach()
-    #Degug only static libs
+    #Degug-only static libs
     set(CBC_LIBS_DBG Cgl Osi coinmumps coinglpk coinlapack coinmetis coinblas)
     foreach(lib IN LISTS CBC_LIBS_DBG)
         add_library(${lib} STATIC IMPORTED)
@@ -72,7 +75,7 @@ endif ()
 target_include_directories(BestPartition PRIVATE ${CBC_INCLUDE_DIRS})
 
 #link libraries
-target_link_libraries(BestPartition ${CBC_LIBRARIES})
+target_link_libraries(BestPartition ${CBC_TARGETS})
 
 #check if CPLEX installed
 find_package(CPLEX)
