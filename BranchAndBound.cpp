@@ -43,9 +43,9 @@ pair<vector<PenalizingChain>, double> GetPenalizingChains(Matrix Q, const Matrix
         // Disabling this stops reusing chains, so we will run our cycles to find all chains again
         // on random graphs this reduses by half number of visited nodes, but doubles total time
         if (params.reuse_chains)
-            penalty += AddPenalizingChains_simplex(old_chains, chains, Q, fixedEdges, params.max_chain_len, params.only_nonzero_solution, params.solver == BnBParameters::CPLEX, text_level);
+            penalty += AddPenalizingChainsLP(old_chains, chains, Q, fixedEdges, params.max_chain_len, params.only_nonzero_solution, params.solver == BnBParameters::CPLEX, text_level);
         else
-            penalty += AddPenalizingChains_simplex(chains, chains, Q, fixedEdges, params.max_chain_len, params.only_nonzero_solution, params.solver == BnBParameters::CPLEX, text_level);
+            penalty += AddPenalizingChainsLP(chains, chains, Q, fixedEdges, params.max_chain_len, params.only_nonzero_solution, params.solver == BnBParameters::CPLEX, text_level);
     } else {
         for (auto& chain : old_chains) {
             bool good_chain = true;
@@ -81,7 +81,7 @@ pair<vector<PenalizingChain>, double> GetPenalizingChains(Matrix Q, const Matrix
             }
         }
         for (size_t path_len = 2; !OnlyPositiveEdgesInPositiveConnComp(Q, fixedEdges); ++path_len)
-            penalty += AddPenalizingChains_fast(path_len, chains, Q, fixedEdges, text_level);
+            penalty += AddPenalizingChainsHeuristic(path_len, chains, Q, fixedEdges, text_level);
     }
     return {chains, penalty};
 }

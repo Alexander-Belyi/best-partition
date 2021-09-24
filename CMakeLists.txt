@@ -39,6 +39,7 @@ target_include_directories(BestPartition PRIVATE "${CMAKE_SOURCE_DIR}/Combo/")
 
 #find CBC
 find_package(CBC)
+#[[
 if (NOT CBC_FOUND)
     #add CBC libs manually
     #this code is here to add debug version of CBC
@@ -70,6 +71,7 @@ if (NOT CBC_FOUND)
     endforeach()
     set(CBC_INCLUDE_DIRS ${CBC_ROOT}/build/release/include/coin/)
 endif ()
+#]]
 
 #includes path
 target_include_directories(BestPartition PRIVATE ${CBC_INCLUDE_DIRS})
@@ -93,6 +95,7 @@ if (CPLEX_FOUND)
     add_compile_definitions(IL_STD CPLEX_AVAILABLE)
 endif()
 
+#[[
 if (NOT CBC_FOUND)
     #debug -> link the rest of CBC static libs
     #this should be added after CPLEX since coinblas conflicts with libcplex
@@ -101,3 +104,4 @@ if (NOT CBC_FOUND)
     endforeach()
     target_link_libraries(BestPartition debug gfortran debug z debug dl)
 endif ()
+#]]

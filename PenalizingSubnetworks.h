@@ -57,20 +57,26 @@ struct PenalizingChain
 };
 
 
-double AddPenalizingChains_fast(size_t len,
-                           std::vector<PenalizingChain>& chains,
-                           Matrix& Q,
-                           const MatrixInt& fixedEdges,
-                           int text_level);
+double AddPenalizingChainsHeuristic(size_t chain_len,
+                                    std::vector<PenalizingChain>& chains,
+                                    Matrix& Q,
+                                    const MatrixInt& fixedEdges,
+                                    int text_level);
 
-double AddPenalizingChains_simplex(const std::vector<PenalizingChain>& old_chains,
-                                   std::vector<PenalizingChain>& chains,
-                                   const Matrix& Q,
-                                   const MatrixInt& fixedEdges,
-                                   int max_chain_len,
-                                   bool only_nonzero_solution,
-                                   bool use_cplex,
-                                   int text_level);
+double AddPenalizingChainsLP(const std::vector<PenalizingChain>& old_chains,
+                             std::vector<PenalizingChain>& chains,
+                             const Matrix& Q,
+                             const MatrixInt& fixedEdges,
+                             int max_chain_len,
+                             bool only_nonzero_solution,
+                             bool prefer_cplex,
+                             int text_level);
+
+double GetPenaltyUsingChainsAndStars(const Matrix& Q,
+                                     const MatrixInt& fixedEdges,
+                                     int max_chain_len,
+                                     bool prefer_cplex,
+                                     int text_level);
 
 bool OnlyPositiveEdgesInPositiveConnComp(const Matrix& Q, const MatrixInt& fixedEdges);
 

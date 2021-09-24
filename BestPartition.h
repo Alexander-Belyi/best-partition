@@ -85,6 +85,7 @@ struct BnBParameters
 double EstimateUB_trivial(const Graph& graph);
 double EstimateUB_chains_fast(const Graph& graph, const int text_level = 0);
 double EstimateUB_chains_simplex(const Graph& graph, const int text_level = 0);
+double EstimateUB_chains_and_stars(const Graph& graph, const int text_level = 0);
 double EstimateUB_relax_LP(const Graph& graph, std::optional<unsigned int> time_limit, const int text_level = 0);
 SolutionInfo BestPartitionILP(const Graph& graph, std::optional<unsigned int> time_limit, const int text_level = 0);
 SolutionInfo BestPartitionBnB(const Graph& graph, BnBParameters parameters, std::optional<unsigned int> time_limit, const int text_level = 0);

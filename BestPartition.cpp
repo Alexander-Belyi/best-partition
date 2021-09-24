@@ -55,7 +55,7 @@ double EstimateUB_chains_fast(const Graph& graph, const int text_level)
         fixedEdges[i][i] = 1;
     vector<PenalizingChain> chains;
     for (size_t path_len = 2; !OnlyPositiveEdgesInPositiveConnComp(Q); ++path_len)
-        estimate -= AddPenalizingChains_fast(path_len, chains, Q, fixedEdges, text_level);
+        estimate -= AddPenalizingChainsHeuristic(path_len, chains, Q, fixedEdges, text_level);
     return estimate;
 }
 
@@ -73,7 +73,24 @@ double EstimateUB_chains_simplex(const Graph& graph, const int text_level)
     for (size_t i = 0; i < n; ++i)
         fixedEdges[i][i] = 1;
     vector<PenalizingChain> chains;
-    estimate -= AddPenalizingChains_simplex(chains, chains, Q, fixedEdges, 4, false, false, text_level);
+    estimate -= AddPenalizingChainsLP(chains, chains, Q, fixedEdges, 6, false, true, text_level);
+    return estimate;
+}
+
+double EstimateUB_chains_and_stars(const Graph& graph, const int text_level)
+{
+	Matrix Q = graph.GetModularityMatrix();
+	double estimate = TrivialEstimate(Q);
+    size_t n = Q.size();
+    //get rid of the loop edges
+    for (size_t i = 0; i < n; ++i)
+    	Q[i][i] = 0;
+    if (text_level > 0)
+        cout << "Initial estimate = " << estimate << endl;
+    MatrixInt fixedEdges(n, vector<int>(n, -1));
+    for (size_t i = 0; i < n; ++i)
+        fixedEdges[i][i] = 1;
+    estimate -= GetPenaltyUsingChainsAndStars(Q, fixedEdges, 5, true, text_level);
     return estimate;
 }
 
