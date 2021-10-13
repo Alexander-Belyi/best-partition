@@ -74,9 +74,9 @@ if(NOT "${CBC_FILE_LOC}" STREQUAL "CBC_FILE_LOC-NOTFOUND")
   endif()
 endif()
 
-#message(STATUS "CBC: CBC_INCLUDE_DIRS = `${CBC_INCLUDE_DIRS}`")
-#message(STATUS "CBC: CBC_LIBRARY_PATHS = `${CBC_LIBRARY_PATHS}`")
-#message(STATUS "CBC: CBC_TARGETS = `${CBC_TARGETS}`")
+message(STATUS "CBC: CBC_INCLUDE_DIRS = `${CBC_INCLUDE_DIRS}`")
+message(STATUS "CBC: CBC_LIBRARY_PATHS = `${CBC_LIBRARY_PATHS}`")
+message(STATUS "CBC: CBC_TARGETS = `${CBC_TARGETS}`")
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set CBC_FOUND to TRUE
