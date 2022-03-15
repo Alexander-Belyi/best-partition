@@ -271,6 +271,10 @@ void ComboAlgorithm::Run(Graph& graph, optional<size_t> max_communities, bool st
 	while (m_current_best_gain > THRESHOLD) {
 		++iteration;
 		bool community_added = destination >= graph.NumberOfCommunities();
+		if (destination > graph.NumberOfCommunities()) {
+			cerr << "WARNING: in Run, destination community is greater than number of communities." << endl;
+			destination = graph.NumberOfCommunities();
+		}
 		graph.PerformSplit(origin, destination, splits_communities[destination]);
 		bool origin_became_empty = DeleteCommunityIfEmpty(graph, move_gains, splits_communities, origin);
 		if (origin_became_empty) {
@@ -295,21 +299,29 @@ void ComboAlgorithm::Run(Graph& graph, optional<size_t> max_communities, bool st
 		}
 		if (community_added) {
 			if (destination + 1 < max_communities) {
-				for (auto& row : move_gains)
-					row.push_back(row[destination]);
-				splits_communities.push_back(splits_communities[destination]);
+				for (auto& row : move_gains) {
+					if(destination + 1 >= row.size())
+						row.push_back(row[destination]);
+					else
+						row[destination + 1] = row[destination];
+				}
+				if (destination + 1 >= splits_communities.size())
+					splits_communities.push_back(splits_communities[destination]);
+				else
+					splits_communities[destination + 1] = splits_communities[destination];
 			}
 			if (destination >= move_gains.size())
 				move_gains.push_back(vector<double>(move_gains.back().size(), 0));
 		}
 		for (size_t i = 0; i < graph.NumberOfCommunities() + (graph.NumberOfCommunities() < max_communities); ++i) {
-			if (!origin_became_empty)
-				ReCalc(graph, move_gains, splits_communities, origin, i);
 			ReCalc(graph, move_gains, splits_communities, destination, i);
-			if (!origin_became_empty && i != destination && i < graph.NumberOfCommunities())
-				ReCalc(graph, move_gains, splits_communities, i, origin);
-			if (i != origin && i < graph.NumberOfCommunities())
+			if (i < graph.NumberOfCommunities())
 				ReCalc(graph, move_gains, splits_communities, i, destination);
+			if (!origin_became_empty && i != destination) {
+				ReCalc(graph, move_gains, splits_communities, origin, i);
+				if (i < graph.NumberOfCommunities())
+					ReCalc(graph, move_gains, splits_communities, i, origin);
+			}
 		}
 		m_current_best_gain = BestGain(move_gains, origin, destination);
 	}

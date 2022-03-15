@@ -544,8 +544,10 @@ double Graph::Modularity() const
 
 void Graph::PerformSplit(size_t origin, size_t destination, const vector<bool>& to_be_moved)
 {
-	if (destination > m_number_of_communities)
+	if (destination > m_number_of_communities) {
+		cerr << "WARNING: in PerformSplit, destination community is greater than number of communities." << endl;
 		destination = m_number_of_communities;
+	}
 	if (destination == m_number_of_communities)
 		++m_number_of_communities;
 	for (size_t i = 0; i < Size(); ++i)
