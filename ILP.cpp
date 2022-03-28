@@ -348,6 +348,8 @@ tuple<double, MatrixInt, int> SolveIP_cplex(const Matrix& Q, optional<unsigned i
                 ++edge_num;
             }
         IloNumVarArray vars(env, num_edges, 0, 1, ILOBOOL);
+        if (text_level == -5)
+            cout << "Num variables = " << num_edges << endl;
         obj.setLinearCoefs(vars, coeffs);
         model.add(obj);
         IloRangeArray constrs(env);
@@ -365,6 +367,8 @@ tuple<double, MatrixInt, int> SolveIP_cplex(const Matrix& Q, optional<unsigned i
                         constrs.add(-vars[ij] + vars[jk] + vars[ik] <= 1);
                 }
         model.add(constrs);
+        if (text_level == -5)
+            cout << "Num constraints = " << constrs.getSize() << endl;
         IloCplex cplex(model);
         cplex.setParam(IloCplex::Param::Threads, 1);
         if (time_limit.has_value())

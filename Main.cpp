@@ -55,13 +55,13 @@ vector<SolutionInfo> run_CPP_test(Graph& G, BnBParameters bnb_params,
 	vector<SolutionInfo> res = {info};
 	if (compare_with_ILP) {
 		time_start = clock();
-		SolutionInfo IP_info = BestPartitionILP(G, nullopt, 0);
-		IP_info.run_time = double(clock() - time_start) / CLOCKS_PER_SEC;
-		if (abs(IP_info.optimal_solution - info.optimal_solution) > EPS)
-			cerr << "ERROR: optimal_solution by IP != optimal_solution" << endl;
+		SolutionInfo ILP_info = BestPartitionILP(G, nullopt, 0);
+		ILP_info.run_time = double(clock() - time_start) / CLOCKS_PER_SEC;
+		if (abs(ILP_info.optimal_solution - info.optimal_solution) > EPS)
+			cerr << "ERROR: optimal_solution by ILP != optimal_solution" << endl;
 		if (abs(info.optimal_solution - info.best_estimate) > EPS)
 			cerr << "ERROR: optimal_solution != best_estimate" << endl;
-		res = {info, IP_info};
+		res = {info, ILP_info};
 	}
 	return res;
 }
@@ -170,24 +170,114 @@ int run_Miyauchi_nets(int text_level)
 	return 0;
 }
 
+int run_reduction_ILP_test(int test_set, int text_level, bool use_ILP_solver = true)
+{
+	string path;
+	vector<string> network_file_names;
+	if (test_set == 1) {
+		path = TESTS_FOLDER+"/Lorena/";
+		network_file_names = {
+			//"counter_example.net",
+			"lesmis.net",
+			"GD00-a_main.net",
+			"ca-sandi-auths.net",
+			"rt-retweet.net",
+			"netscience_main.net",
+			"bio-DM-LC.net",
+			//"power-494-bus.net",
+			"bio-diseasome.net",
+			"bio-grid-mouse.net",
+			"ca-CSphd.net"
+		};
+	} else if (test_set == 2) {
+		path = TESTS_FOLDER+"/Jaehn/cpp_real_world_graphs/Grotschel-Wakabayashi/";
+		network_file_names = {
+			"wild_cats.edgelist",
+			"cars.edgelist",
+			"workers.edgelist",
+			"cetacea.edgelist",
+			"micro.edgelist",
+			"UNO.edgelist",
+			"UNO_1a.edgelist",
+			"UNO_1b.edgelist",
+			"UNO_2a.edgelist",
+			"UNO_2b.edgelist"
+			};
+	}
+	for(const string& net_name : network_file_names) {
+		Graph G;
+		if (test_set == 1)
+			G = ReadGraphFromFile(path + net_name);
+		else
+			G = ReadGraphFromFile(path + net_name, 1.0, true);
+		cout << net_name << " size = " << G.Size() << endl;
+		clock_t time_start = clock();
+		G.MergeIdenticalNodes();
+		cout << "Size after merging identical = " << G.Size() << endl;
+		G.MergeStronglyConnected();
+		cout << "Size after merging strongly connected = " << G.Size() << endl;
+		cout << "Preprocessing time: " << double(clock() - time_start) / CLOCKS_PER_SEC << endl;
+		if (use_ILP_solver) {
+			time_start = clock();
+			SolutionInfo ILP_info = BestPartitionILP(G, nullopt, -5);
+			ILP_info.run_time = double(clock() - time_start) / CLOCKS_PER_SEC;
+			cout << "Max modularity by exact solution of ILP: "
+				<< ILP_info.optimal_solution
+				<< ", visited " << ILP_info.num_visited_nodes << " nodes, "
+				<< "Time elapsed: " << double(clock() - time_start) / CLOCKS_PER_SEC << endl;
+		}
+		cout << endl;
+	}
+	return 0;
+}
+
+int parse_input(int argc, char** argv) {
+	int experiment = 0;
+	if (argc == 2 && string(argv[0]) == "1") {
+		experiment = 1;
+	} else if (argc == 2 && string(argv[0]) == "2") {
+		experiment = 1;
+	} else {
+		while (experiment == 0) {
+			cout << "Please, enter \"1\" to run the program reproducing results of \"Subnetwork Constraints ...\" paper,\n"
+			     << "or enter \"2\" to run the program reproducing results of \"Network size reduction ...\" paper.\n";
+			string input;
+			cin >> input;
+			if (input == "1")
+				experiment = 1;
+			else if (input == "2")
+				experiment = 2;
+		}
+	}
+	return experiment;
+}
+
 int main(int argc, char** argv)
 {
+	int experiment = parse_input(argc, argv);
 	cout.precision(17);
 	bool compare_with_ILP = false;
 	int num_combo_runs = 2;
 	int text_level = 0;
-	cout << "Starting random test set 1" << endl;
-	run_CPP_rand_test_nets(1, compare_with_ILP, num_combo_runs, text_level);
-	cout << "Starting random test set 2" << endl;
-	run_CPP_rand_test_nets(2, compare_with_ILP, num_combo_runs, text_level);
-	cout << "Starting random test set 3" << endl;
-	run_CPP_rand_test_nets(3, compare_with_ILP, num_combo_runs, text_level);
-	cout << "Starting GW real world test set" << endl;
-	run_CPP_rw_test_nets(1, compare_with_ILP, num_combo_runs, text_level);
-	cout << "Starting Oosten real world test set" << endl;
-	run_CPP_rw_test_nets(2, compare_with_ILP, num_combo_runs, text_level);
-	cout << "Starting Miyauchi real world test set optimizing modularity" << endl;
-	run_Miyauchi_nets(text_level);
+	if (experiment == 1) {
+		cout << "Starting random test set 1" << endl;
+		run_CPP_rand_test_nets(1, compare_with_ILP, num_combo_runs, text_level);
+		cout << "Starting random test set 2" << endl;
+		run_CPP_rand_test_nets(2, compare_with_ILP, num_combo_runs, text_level);
+		cout << "Starting random test set 3" << endl;
+		run_CPP_rand_test_nets(3, compare_with_ILP, num_combo_runs, text_level);
+		cout << "Starting GW real world test set" << endl;
+		run_CPP_rw_test_nets(1, compare_with_ILP, num_combo_runs, text_level);
+		cout << "Starting Oosten real world test set" << endl;
+		run_CPP_rw_test_nets(2, compare_with_ILP, num_combo_runs, text_level);
+		cout << "Starting Miyauchi real world test set optimizing modularity" << endl;
+		run_Miyauchi_nets(text_level);
+	} else if (experiment == 2) {
+		cout << "Starting solving CPP using ILP solver for the GW real world test set" << endl << endl;
+		run_reduction_ILP_test(2, text_level);
+		cout << "Starting modularity optimization using ILP solver for the Lorena real world test set" << endl << endl;
+		run_reduction_ILP_test(1, text_level);
+	}
 	
 	return 0;
 }
