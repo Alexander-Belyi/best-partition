@@ -1,5 +1,5 @@
 /*                                                                            
-    Copyright 2021
+    Copyright 2022
     Alexander Belyi <alexander.belyi@gmail.com>,
     Stanislav Sobolevsky <stanly@mit.edu>                                               
                                                                             
@@ -47,6 +47,12 @@ public:
 	Graph(const Graph& graph);
 	Graph(Graph&& graph) noexcept;
 	Graph& operator=(Graph graph);
+
+	// see Belyi, Sobolevsky "Network Size Reduction Preserving Optimal Modularity and Clique Partition"
+	//merge identically connected nodes and return mapping[old] = new
+	std::vector<size_t> MergeIdenticalNodes();
+	//merge strongly connected nodes and return mapping[old] = new
+	std::vector<size_t> MergeStronglyConnected();
 
 	size_t Size() const {return m_modularity_matrix.size();}
 	bool IsDirected() const {return m_is_directed;}

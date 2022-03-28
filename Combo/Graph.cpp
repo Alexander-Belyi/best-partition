@@ -1,5 +1,5 @@
 /*                                                                            
-    Copyright 2021
+    Copyright 2022
     Alexander Belyi <alexander.belyi@gmail.com>,
     Stanislav Sobolevsky <stanly@mit.edu>                                               
                                                                             
@@ -26,6 +26,7 @@
 #include <fstream>
 #include <iostream>
 #include <locale>
+#include <numeric>
 #include <set>
 #include <sstream>
 #include <string>
@@ -43,8 +44,10 @@ using std::vector;
 using std::cerr;
 using std::cout;
 using std::endl;
+using std::iota;
 using std::max;
 using std::min;
+using std::swap;
 
 Graph ReadFromEdgelist(const string& file_name, double mod_resolution, bool treat_as_modularity)
 {
@@ -599,4 +602,87 @@ vector<double> Graph::GetCorrectionVector(const vector<size_t>& orig_comm_ind, c
 		for (size_t j = 0; j < dest_comm_ind.size(); ++j)
 			res[i] += m_modularity_matrix[dest_comm_ind[j]][orig_comm_ind[i]];
 	return res;
+}
+
+std::vector<size_t> Graph::MergeIdenticalNodes()
+{
+	// first, find and mark identical connected nodes
+	// for each node in a group of identical nodes, their representative is minimal node from the group
+    vector<size_t> representatives(m_modularity_matrix.size());
+    iota(representatives.begin(), representatives.end(), 0);
+    for (size_t i = 0; i < m_modularity_matrix.size(); ++i)
+		if (representatives[i] == i)
+			for (size_t j = i+1; j < m_modularity_matrix.size(); ++j)
+				if (m_modularity_matrix[i][j] >= 0) {
+					bool same = true;
+					for (size_t k = 0; k < m_modularity_matrix.size(); ++k)
+						if (k != i && k != j && abs(m_modularity_matrix[i][k] - m_modularity_matrix[j][k]) > EPS) {
+							same = false;
+							break;
+						}
+					if (same)
+						representatives[j] = i;
+				}
+	// then merge identical nodes
+    int cnt_merged = 0;
+	for (size_t i = 1; i < representatives.size(); ++i)
+        if (representatives[i] != i - cnt_merged) {
+            m_modularity_matrix = MergeTwoNodes(m_modularity_matrix, representatives[i], i - cnt_merged);
+            for (size_t &r : representatives)
+                if (r > i - cnt_merged)
+                    --r;
+            ++cnt_merged;
+        }
+    return representatives;
+}
+
+std::vector<size_t> Graph::MergeStronglyConnected()
+{
+    vector<size_t> representatives(m_modularity_matrix.size());
+    iota(representatives.begin(), representatives.end(), 0);
+	bool finished = false;
+    while (!finished) {
+        finished = true;
+		for (size_t i = 0; i < m_modularity_matrix.size(); /*empty*/) {
+            double sum_pos = 0;
+            double sum_neg = 0;
+            double max_weight = 0;
+            size_t positive_cnt = 0;
+            size_t max_ind = 0;
+            for (size_t j = 0; j < m_modularity_matrix.size(); ++j)
+                if (i != j) {
+                    if (m_modularity_matrix[i][j] > 0) {
+                        sum_pos += m_modularity_matrix[i][j];
+						if (m_modularity_matrix[i][j] > max_weight) {
+							max_weight = m_modularity_matrix[i][j];
+							max_ind = j;
+						}
+						++positive_cnt;
+                    } else {
+						sum_neg += m_modularity_matrix[i][j];
+					}
+                }
+            if (positive_cnt > 0 && max_weight >= sum_pos - max_weight - sum_neg) {
+				size_t src = i;
+				size_t dst = max_ind;
+				if (i < max_ind) {
+					++i;
+					swap(src, dst);
+				}
+				m_modularity_matrix = MergeTwoNodes(m_modularity_matrix, dst, src);
+				for (size_t r = 1; r < representatives.size(); ++r) {
+					if (representatives[r] == src)
+						representatives[r] = dst;
+					else if (representatives[r] > src)
+						--representatives[r];
+				}
+				finished = false;
+            } else {
+				if (positive_cnt == 0)
+					cout << "Disconnected node i=" << i << endl;
+				++i;
+			}
+        }
+    }
+    return representatives;
 }
