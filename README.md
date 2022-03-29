@@ -1,6 +1,14 @@
 # Best partition
-This repo is the author's implementation of the algorithms described in the paper "[Subnetwork Constraints for Tighter Upper Bounds and Exact Solution of the Clique Partitioning Problem](https://arxiv.org/abs/2110.05627)." We apply the branch-and-bound method to solve the clique partitioning problem. It could also be used to maximize the modularity function to reveal a network's community structure. If you find this work useful, please, consider citing:
-```
+This repo is the author's implementation of the algorithms described in the papers:
+1. "[Subnetwork Constraints for Tighter Upper Bounds and Exact Solution of the Clique Partitioning Problem](https://arxiv.org/abs/2110.05627)"
+2. "Network Size Reduction Preserving Optimal Modularity and Clique Partition."
+
+Depending on the user choice, the program reproduces results from the corresponding article.
+The first algorithm applies the branch-and-bound method to solve the clique partitioning problem or maximize the modularity function revealing the network's community structure.
+The second article described a technique for network size reduction that preserves the optimal partition allowing for a much faster solution of the CPP.
+
+If you find this work useful, please, consider citing:
+``` 
 A. Belyi, S. Sobolevsky, A. Kurbatski, C. Ratti, "Subnetwork Constraints for Tighter Upper Bounds and Exact Solution of the Clique Partitioning Problem," arXiv preprint arXiv:2110.05627
 ```
 
