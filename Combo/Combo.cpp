@@ -123,7 +123,7 @@ double ComboAlgorithm::Split(Matrix& Q,
 	if (m_num_split_attempts > 0)
 		tries = m_num_split_attempts;
 	else
-		tries = int(pow(abs(log(m_current_best_gain)), m_autoC2) / m_autoC1 + 3);
+		tries = int(pow(fabs(log(m_current_best_gain)), m_autoC2) / m_autoC1 + 3);
 	for (int tryI = 1; tryI <= tries; ++tryI) {
 		vector<int> communities(n); // 0 - stay in origin, 1 - move to destination
 		//perform an initial simple split

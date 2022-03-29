@@ -23,6 +23,7 @@
 
 #include <algorithm>
 #include <climits>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <locale>
@@ -33,21 +34,7 @@
 #include <tuple>
 #include <vector>
 #include <utility>
-using std::get;
-using std::ifstream;
-using std::ofstream;
-using std::set;
-using std::string;
-using std::stringstream;
-using std::tuple;
-using std::vector;
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::iota;
-using std::max;
-using std::min;
-using std::swap;
+using namespace std;
 
 Graph ReadFromEdgelist(const string& file_name, double mod_resolution, bool treat_as_modularity)
 {
@@ -616,7 +603,7 @@ std::vector<size_t> Graph::MergeIdenticalNodes()
 				if (m_modularity_matrix[i][j] >= 0) {
 					bool same = true;
 					for (size_t k = 0; k < m_modularity_matrix.size(); ++k)
-						if (k != i && k != j && abs(m_modularity_matrix[i][k] - m_modularity_matrix[j][k]) > EPS) {
+						if (k != i && k != j && fabs(m_modularity_matrix[i][k] - m_modularity_matrix[j][k]) > EPS) {
 							same = false;
 							break;
 						}
