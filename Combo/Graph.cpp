@@ -627,49 +627,71 @@ std::vector<size_t> Graph::MergeStronglyConnected()
 {
     vector<size_t> representatives(m_modularity_matrix.size());
     iota(representatives.begin(), representatives.end(), 0);
-	bool finished = false;
-    while (!finished) {
-        finished = true;
-		for (size_t i = 0; i < m_modularity_matrix.size(); /*empty*/) {
-            double sum_pos = 0;
-            double sum_neg = 0;
-            double max_weight = 0;
-            size_t positive_cnt = 0;
-            size_t max_ind = 0;
-            for (size_t j = 0; j < m_modularity_matrix.size(); ++j)
-                if (i != j) {
-                    if (m_modularity_matrix[i][j] > 0) {
-                        sum_pos += m_modularity_matrix[i][j];
-						if (m_modularity_matrix[i][j] > max_weight) {
-							max_weight = m_modularity_matrix[i][j];
-							max_ind = j;
-						}
-						++positive_cnt;
-                    } else {
-						sum_neg += m_modularity_matrix[i][j];
+	for (size_t i = 0; i < m_modularity_matrix.size(); /*empty*/) {
+		double sum_pos = 0;
+		double sum_neg = 0;
+		double max_weight = 0;
+		size_t positive_cnt = 0;
+		size_t max_ind = 0;
+		for (size_t j = 0; j < m_modularity_matrix.size(); ++j)
+			if (i != j) {
+				if (m_modularity_matrix[i][j] > 0) {
+					sum_pos += m_modularity_matrix[i][j];
+					if (m_modularity_matrix[i][j] > max_weight) {
+						max_weight = m_modularity_matrix[i][j];
+						max_ind = j;
 					}
-                }
-            if (positive_cnt > 0 && max_weight >= sum_pos - max_weight - sum_neg) {
-				size_t src = i;
-				size_t dst = max_ind;
-				if (i < max_ind) {
-					++i;
-					swap(src, dst);
+					++positive_cnt;
+				} else {
+					sum_neg += m_modularity_matrix[i][j];
 				}
-				m_modularity_matrix = MergeTwoNodes(m_modularity_matrix, dst, src);
-				for (size_t r = 1; r < representatives.size(); ++r) {
-					if (representatives[r] == src)
-						representatives[r] = dst;
-					else if (representatives[r] > src)
-						--representatives[r];
-				}
-				finished = false;
-            } else {
-				if (positive_cnt == 0)
-					cout << "Disconnected node i=" << i << endl;
-				++i;
 			}
-        }
-    }
+		if (positive_cnt > 0 && max_weight >= sum_pos - max_weight - sum_neg) {
+			size_t src = i;
+			size_t dst = max_ind;
+			if (i < max_ind) {
+				++i;
+				swap(src, dst);
+			}
+			m_modularity_matrix = MergeTwoNodes(m_modularity_matrix, dst, src);
+			for (size_t r = 1; r < representatives.size(); ++r) {
+				if (representatives[r] == src)
+					representatives[r] = dst;
+				else if (representatives[r] > src)
+					--representatives[r];
+			}
+		} else {
+			if (positive_cnt == 0)
+				cout << "Disconnected node i=" << i << endl;
+			++i;
+		}
+	}
     return representatives;
+}
+
+std::vector<size_t> Graph::ReduceSize()
+{
+    vector<size_t> old_to_new(m_modularity_matrix.size());
+    iota(old_to_new.begin(), old_to_new.end(), 0);
+	bool merged_identical = true;
+	bool merged_strong = true;
+	size_t current_size = m_modularity_matrix.size();
+	while (true) {
+    	vector<size_t> representatives = MergeIdenticalNodes();
+		merged_identical = (current_size > m_modularity_matrix.size());
+		if (!merged_identical && !merged_strong)
+			break;
+		else if (merged_identical)
+			for (size_t i = 0; i < old_to_new.size(); ++i)
+				old_to_new[i] = representatives[old_to_new[i]];
+		current_size = m_modularity_matrix.size();
+    	representatives = MergeStronglyConnected();
+		merged_strong = (current_size > m_modularity_matrix.size());
+		if (!merged_identical && !merged_strong)
+			break;
+		else if (merged_strong)
+			for (size_t i = 0; i < old_to_new.size(); ++i)
+				old_to_new[i] = representatives[old_to_new[i]];
+	}
+	return old_to_new;
 }

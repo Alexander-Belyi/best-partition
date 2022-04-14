@@ -175,6 +175,7 @@ int run_reduction_ILP_test(int test_set, int text_level, bool use_ILP_solver = t
 	string path;
 	vector<string> network_file_names;
 	if (test_set == 1) {
+		cout << "Starting modularity optimization using ILP solver for the Lorena real-world test set" << endl << endl;
 		path = TESTS_FOLDER+"/Lorena/";
 		network_file_names = {
 			//"counter_example.net",
@@ -190,6 +191,7 @@ int run_reduction_ILP_test(int test_set, int text_level, bool use_ILP_solver = t
 			"ca-CSphd.net"
 		};
 	} else if (test_set == 2) {
+		cout << "Starting solving CPP using ILP solver for the GW real-world test set" << endl << endl;
 		path = TESTS_FOLDER+"/Jaehn/cpp_real_world_graphs/Grotschel-Wakabayashi/";
 		network_file_names = {
 			"wild_cats.edgelist",
@@ -212,10 +214,8 @@ int run_reduction_ILP_test(int test_set, int text_level, bool use_ILP_solver = t
 			G = ReadGraphFromFile(path + net_name, 1.0, true);
 		cout << net_name << " size = " << G.Size() << endl;
 		clock_t time_start = clock();
-		G.MergeIdenticalNodes();
-		cout << "Size after merging identical = " << G.Size() << endl;
-		G.MergeStronglyConnected();
-		cout << "Size after merging strongly connected = " << G.Size() << endl;
+		G.ReduceSize();
+		cout << "Size after size-reduction merges = " << G.Size() << endl;
 		cout << "Preprocessing time: " << double(clock() - time_start) / CLOCKS_PER_SEC << endl;
 		if (use_ILP_solver) {
 			time_start = clock();
@@ -273,9 +273,7 @@ int main(int argc, char** argv)
 		cout << "Starting Miyauchi real world test set optimizing modularity" << endl;
 		run_Miyauchi_nets(text_level);
 	} else if (experiment == 2) {
-		cout << "Starting solving CPP using ILP solver for the GW real world test set" << endl << endl;
 		run_reduction_ILP_test(2, text_level);
-		cout << "Starting modularity optimization using ILP solver for the Lorena real world test set" << endl << endl;
 		run_reduction_ILP_test(1, text_level);
 	}
 	

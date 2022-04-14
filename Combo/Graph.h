@@ -53,6 +53,8 @@ public:
 	std::vector<size_t> MergeIdenticalNodes();
 	//merge strongly connected nodes and return mapping[old] = new
 	std::vector<size_t> MergeStronglyConnected();
+	//apply MergeStronglyConnected and MergeIdenticalNodes until no reduction is possible
+	std::vector<size_t> ReduceSize();
 
 	size_t Size() const {return m_modularity_matrix.size();}
 	bool IsDirected() const {return m_is_directed;}
